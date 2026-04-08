@@ -8,12 +8,21 @@ export function logSumExp(values: number[]): number {
 }
 
 export function computeCost(q: number[], probs: number[], beta: number): number {
+  if (q.length !== probs.length) throw new Error(`computeCost: length mismatch (q=${q.length}, probs=${probs.length})`);
+  if (!(beta > 0)) throw new Error(`computeCost: beta must be > 0 (got ${beta})`);
+  if (!probs.every(p => p >= 0 && Number.isFinite(p))) throw new Error('computeCost: all probabilities must be finite and non-negative');
+  if (!q.every(Number.isFinite)) throw new Error('computeCost: all q entries must be finite');
   // C(q) = β · log(Σ p_i · exp(q_i / β))
   const scaled = q.map((qi, i) => Math.log(probs[i]) + qi / beta);
   return beta * logSumExp(scaled);
 }
 
 export function computeDC(q: number[], h: number[], probs: number[], beta: number): number {
+  if (q.length !== probs.length || h.length !== q.length) throw new Error(`computeDC: length mismatch (q=${q.length}, h=${h.length}, probs=${probs.length})`);
+  if (!(beta > 0)) throw new Error(`computeDC: beta must be > 0 (got ${beta})`);
+  if (!probs.every(p => p >= 0 && Number.isFinite(p))) throw new Error('computeDC: all probabilities must be finite and non-negative');
+  if (!q.every(Number.isFinite)) throw new Error('computeDC: all q entries must be finite');
+  if (!h.every(Number.isFinite)) throw new Error('computeDC: all h entries must be finite');
   // DC(q)[h] = Σ h_i * w_i where w_i = p_i*exp(q_i/β) / Σ p_j*exp(q_j/β)
   const logWeights = q.map((qi, i) => Math.log(probs[i]) + qi / beta);
   const logNorm = logSumExp(logWeights);
@@ -40,6 +49,37 @@ export function computeTrade(
   deltaQ: number[]
 ): TradeResult {
   const { qMaker, probabilities, beta, maxLoss, positions } = statement;
+
+  if (deltaQ.length !== qMaker.length) {
+    return {
+      deltaC: 0,
+      deltaPiTaker: 0,
+      deltaPiMaker: 0,
+      deltaMinTaker: 0,
+      newQMaker: qMaker.slice(),
+      newQTaker: (positions[taker.id] ?? qMaker.map(() => 0)).slice(),
+      valid: false,
+      takerSolvent: false,
+      makerSafe: false,
+      errorMessage: `Invalid trade vector length. Expected ${qMaker.length}, received ${deltaQ.length}.`,
+    };
+  }
+
+  if (deltaQ.some(dq => !Number.isFinite(dq))) {
+    return {
+      deltaC: 0,
+      deltaPiTaker: 0,
+      deltaPiMaker: 0,
+      deltaMinTaker: 0,
+      newQMaker: qMaker.slice(),
+      newQTaker: (positions[taker.id] ?? qMaker.map(() => 0)).slice(),
+      valid: false,
+      takerSolvent: false,
+      makerSafe: false,
+      errorMessage: 'Invalid trade vector. All deltaQ entries must be finite numbers.',
+    };
+  }
+
   const qTaker = positions[taker.id] ?? qMaker.map(() => 0);
 
   const newQMaker = qMaker.map((q, i) => q + deltaQ[i]);

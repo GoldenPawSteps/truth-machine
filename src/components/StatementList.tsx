@@ -28,7 +28,16 @@ export function StatementList({ onSelect, selectedId }: Props) {
           <div
             key={stmt.id}
             className={`statement-card card ${selectedId === stmt.id ? 'selected' : ''}`}
+            role="button"
+            tabIndex={0}
+            aria-pressed={selectedId === stmt.id}
             onClick={() => onSelect(stmt)}
+            onKeyDown={event => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                onSelect(stmt);
+              }
+            }}
           >
             <div className="stmt-header">
               <span className="stmt-description">{stmt.description}</span>

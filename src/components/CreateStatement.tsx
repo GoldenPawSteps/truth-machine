@@ -33,7 +33,7 @@ export function CreateStatement() {
     if (!isValid) return;
     dispatch({
       type: 'CREATE_STATEMENT',
-      payload: { description, outcomes, probabilities: probs, beta, maxLoss, makerId: user.id },
+      payload: { description, outcomes, probabilities: probs, beta, maxLoss },
     });
     setDescription('');
     setOutcomes(['Yes', 'No']);
@@ -50,8 +50,9 @@ export function CreateStatement() {
       <h2 className="section-title">Create Statement</h2>
       <form onSubmit={handleSubmit} className="create-form">
         <div className="form-group">
-          <label>Description</label>
+          <label htmlFor="stmt-description">Description</label>
           <input
+            id="stmt-description"
             type="text"
             value={description}
             onChange={e => setDescription(e.target.value)}
@@ -62,8 +63,9 @@ export function CreateStatement() {
 
         <div className="form-row">
           <div className="form-group">
-            <label>Number of Outcomes</label>
+            <label htmlFor="stmt-num-outcomes">Number of Outcomes</label>
             <input
+              id="stmt-num-outcomes"
               type="number"
               min={2} max={5}
               value={numOutcomes}
@@ -72,8 +74,9 @@ export function CreateStatement() {
             />
           </div>
           <div className="form-group">
-            <label>Liquidity β</label>
+            <label htmlFor="stmt-beta">Liquidity β</label>
             <input
+              id="stmt-beta"
               type="number"
               step="0.01" min="0.01"
               value={beta}
@@ -82,8 +85,9 @@ export function CreateStatement() {
             />
           </div>
           <div className="form-group">
-            <label>Max Loss L</label>
+            <label htmlFor="stmt-max-loss">Max Loss L</label>
             <input
+              id="stmt-max-loss"
               type="number"
               step="0.01" min="0.01"
               value={maxLoss}
@@ -101,6 +105,7 @@ export function CreateStatement() {
           {outcomes.map((label, i) => (
             <div key={i} className="outcome-row">
               <input
+                id={`stmt-outcome-label-${i}`}
                 type="text"
                 value={label}
                 onChange={e => {
@@ -108,8 +113,10 @@ export function CreateStatement() {
                 }}
                 className="form-input"
                 placeholder={`Outcome ${i + 1}`}
+                aria-label={`Outcome ${i + 1} label`}
               />
               <input
+                id={`stmt-outcome-prob-${i}`}
                 type="number"
                 step="0.01" min="0" max="1"
                 value={probs[i]}
@@ -117,6 +124,7 @@ export function CreateStatement() {
                   const n = [...probs]; n[i] = Number(e.target.value); setProbs(n);
                 }}
                 className="form-input mono"
+                aria-label={`Outcome ${i + 1} probability`}
               />
             </div>
           ))}

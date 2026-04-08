@@ -14,7 +14,7 @@ const initialState: AppState = {
 };
 
 type Action =
-  | { type: 'CREATE_STATEMENT'; payload: Omit<Statement, 'id' | 'qMaker' | 'positions' | 'createdAt'> }
+  | { type: 'CREATE_STATEMENT'; payload: Omit<Statement, 'id' | 'makerId' | 'qMaker' | 'positions' | 'createdAt'> }
   | { type: 'TAKE_POSITION'; payload: { statementId: string; deltaQ: number[] } }
   | { type: 'SWITCH_USER'; payload: string };
 
@@ -81,11 +81,22 @@ function reducer(state: AppState, action: Action): AppState {
       };
 
       // Update other takers' balances
-      const updatedUsers: Record<string, User> = {
-        ...state.users,
-        [taker.id]: updatedTaker,
-        [maker.id]: updatedMaker,
-      };
+      const isSelfTrade = taker.id === maker.id;
+
+      const updatedUsers: Record<string, User> = isSelfTrade
+        ? {
+            ...state.users,
+            [taker.id]: {
+              ...taker,
+              balance: taker.balance + deltaPiTaker - deltaPiMaker,
+              exposure: taker.exposure + deltaMinTaker,
+            },
+          }
+        : {
+            ...state.users,
+            [taker.id]: updatedTaker,
+            [maker.id]: updatedMaker,
+          };
 
       // Compute deltaPi for other takers
       for (const [userId, qTaker] of Object.entries(statement.positions)) {

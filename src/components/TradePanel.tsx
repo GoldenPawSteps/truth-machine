@@ -54,20 +54,24 @@ export function TradePanel({ statement, onClose }: Props) {
 
           <h3 className="subsection-title">Enter Δq (trade vector)</h3>
           <div className="delta-grid">
-            {statement.outcomes.map((label, i) => (
-              <div key={i} className="delta-row">
-                <label className="outcome-label">{label}</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={deltaQ[i]}
-                  onChange={e => {
-                    const n = [...deltaQ]; n[i] = Number(e.target.value); setDeltaQ(n);
-                  }}
-                  className="form-input mono"
-                />
-              </div>
-            ))}
+            {statement.outcomes.map((label, i) => {
+              const inputId = `delta-q-${statement.id}-${i}`;
+              return (
+                <div key={i} className="delta-row">
+                  <label className="outcome-label" htmlFor={inputId}>{label}</label>
+                  <input
+                    id={inputId}
+                    type="number"
+                    step="0.01"
+                    value={deltaQ[i]}
+                    onChange={e => {
+                      const n = [...deltaQ]; n[i] = Number(e.target.value); setDeltaQ(n);
+                    }}
+                    className="form-input mono"
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
 
