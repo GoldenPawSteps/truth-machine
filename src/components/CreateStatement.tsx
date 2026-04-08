@@ -105,7 +105,6 @@ export function CreateStatement() {
           {outcomes.map((label, i) => (
             <div key={i} className="outcome-row">
               <input
-                id={`stmt-outcome-label-${i}`}
                 type="text"
                 value={label}
                 onChange={e => {
@@ -116,7 +115,6 @@ export function CreateStatement() {
                 aria-label={`Outcome ${i + 1} label`}
               />
               <input
-                id={`stmt-outcome-prob-${i}`}
                 type="number"
                 step="0.01" min="0" max="1"
                 value={probs[i]}
